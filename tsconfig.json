@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "Node16",
+    "strict": false,
+    "checkJs": true,
+    "lib": [
+      "DOM",
+      "ES2020"
+    ],
+    "outDir": "build",
+    "target": "ES2020",
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
