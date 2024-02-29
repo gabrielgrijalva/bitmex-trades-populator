@@ -103,12 +103,17 @@ async function BitmexTradesPopulator(apiUrl, apiKey, apiSecret, symbol, filePath
    */
 
   let start = 0;
-
+  let lastRequest = 0;
   let startTimestampMoment = moment.utc(startTimestamp);
   let finishTimestampMoment = moment.utc(finishTimestamp);
 
   while (startTimestampMoment.valueOf() < finishTimestampMoment.valueOf()) {
     console.log(`fetching trades from ${startTimestampMoment.format('YYYY-MM-DD HH:mm:SS')}...`);
+
+    if ((Date.now() - lastRequest) >= 500)
+      lastRequest = Date.now();
+    else
+      await new Promise(resolve => setTimeout(resolve, 500 - (Date.now() - lastRequest)));
 
     const query = {
       symbol: symbol,
@@ -122,7 +127,7 @@ async function BitmexTradesPopulator(apiUrl, apiKey, apiSecret, symbol, filePath
     if (response.status !== 200) {
       console.error(response.data);
 
-      await new Promise(resolve => setTimeout(resolve, 10000));
+      await new Promise(resolve => setTimeout(resolve, 30000));
 
       continue;
     }
