@@ -124,10 +124,20 @@ async function BitmexTradesPopulator(apiUrl, apiKey, apiSecret, symbol, filePath
 
     const response = await privateRequest('GET', '/api/v1/trade', query, null);
 
+    const rateLimitReset = response.headers['x-ratelimit-reset'];
+    const rateLimitRemaining = response.headers['x-ratelimit-remaining'];
+
+    console.log('rateLimitReset', rateLimitReset);
+    console.log('rateLimitRemaining', rateLimitRemaining);
+
+    if (rateLimitRemaining === 0)
+      while (Date.now() < (rateLimitReset * 1000))
+        await new Promise(resolve => setTimeout(resolve, 1));
+
     if (response.status !== 200) {
       console.error(response.data);
 
-      await new Promise(resolve => setTimeout(resolve, 30000));
+      await new Promise(resolve => setTimeout(resolve, 60000));
 
       continue;
     }
