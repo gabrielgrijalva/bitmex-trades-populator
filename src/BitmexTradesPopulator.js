@@ -123,6 +123,9 @@ async function BitmexTradesPopulator(apiUrl, apiKey, apiSecret, symbol, filePath
 
       if (response.status !== 200) {
         console.error(response.data);
+
+        await new Promise(resolve => setTimeout(resolve, 10000));
+
         continue;
       }
 
