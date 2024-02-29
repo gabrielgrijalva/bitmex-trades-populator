@@ -88,6 +88,7 @@ async function BitmexCandlesPopulator(candlesInterval, tradesFilesPath, candlesF
         candle.low = +trade[2];
         candle.close = +trade[2];
       } else if (candle.timestamp !== timestamp) {
+        console.log(`${candle.timestamp} saved...`);
         fs.appendFileSync(candlesFilePath, `${candle.timestamp},${candle.open},${candle.high},${candle.low},${candle.close}\n`);
         candle.timestamp = timestamp;
         candle.open = +trade[2];
