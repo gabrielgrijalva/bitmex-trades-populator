@@ -147,15 +147,19 @@ async function BitmexTradesPopulator(apiUrl, apiKey, apiSecret, symbol, filePath
     if (startTrade.timestamp !== finishTrade.timestamp)
       start = 0;
 
+    let lastFileName = '';
+
     data.forEach(trade => {
       if (trade.timestamp === finishTrade.timestamp)
         start++;
 
-      const fileName = moment.utc(trade.timestamp).startOf('hour').format('YYYY-MM-DDTHH:mm:SS') + '.csv';
       const fileData = `${trade.timestamp},${trade.side},${trade.price}\n`;
+      const fileName = moment.utc(trade.timestamp).startOf('hour').format('YYYY-MM-DDTHH:mm:SS') + '.csv';
 
-      if (!fs.existsSync(`${filePath}/${fileName}`))
+      if (fileName !== lastFileName) {
+        lastFileName = fileName;
         fs.writeFileSync(`${filePath}/${fileName}`, '');
+      }
 
       fs.appendFileSync(`${filePath}/${fileName}`, fileData);
     });
