@@ -11,10 +11,9 @@ const moment = require('moment');
  * @param {string} apiSecret 
  * @param {string} symbol
  * @param {string} filePath
- * @param {string} startTimestamp
  * @param {string} finishTimestamp
  */
-async function BitmexTradesPopulator(apiUrl, apiKey, apiSecret, symbol, filePath, startTimestamp, finishTimestamp) {
+async function BitmexTradesPopulator(apiUrl, apiKey, apiSecret, symbol, filePath, finishTimestamp) {
 
   /**
    *
@@ -73,6 +72,44 @@ async function BitmexTradesPopulator(apiUrl, apiKey, apiSecret, symbol, filePath
 
     return response;
   };
+
+  /**
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   * start timestamp
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   *
+   */
+
+  let startTimestamp = '2017-01-01 00:00:00';
+
+  const files = fs.readdirSync(filePath).sort();
+
+  if (files.length > 0) {
+    const lastFile = files[files.length - 1];
+    fs.rmSync(`${filePath}/${lastFile}`);
+    startTimestamp = lastFile.replace('.csv', '');
+  }
 
   /**
    *
