@@ -128,7 +128,7 @@ async function BitmexTradesPopulator(apiUrl, apiKey, apiSecret, symbol, filePath
 
     console.log('rateLimitRemaining', rateLimitRemaining);
 
-    if (rateLimitRemaining === 0) {
+    if (+rateLimitRemaining === 0) {
       console.log('rate limit reached, waiting 1 minute...');
 
       await new Promise(resolve => setTimeout(resolve, 60000));
