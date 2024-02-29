@@ -87,93 +87,6 @@ async function BitmexTradesPopulator(apiUrl, apiKey, apiSecret, symbol, filePath
    *
    *
    *
-   * get trades
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   */
-
-  /**
-   * 
-   * @param {moment.Moment} startTime 
-   * @param {moment.Moment} finishTime 
-   */
-  const getTrades = async (startTime, finishTime) => {
-    let start = 0;
-    let trades = [];
-
-    while (true) {
-      const query = {
-        symbol: symbol,
-        startTime: startTime.format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]'),
-        start: start,
-        count: 1000,
-      };
-
-      const response = await privateRequest('GET', '/api/v1/trade', query, null);
-
-      if (response.status !== 200) {
-        console.error(response.data);
-
-        await new Promise(resolve => setTimeout(resolve, 10000));
-
-        continue;
-      }
-
-      const data = response.data;
-
-      const startTrade = data[0];
-      const finishTrade = data[data.length - 1];
-
-      if (moment.utc(startTrade.timestamp).valueOf() === moment.utc(finishTrade.timestamp).valueOf()) {
-        data.forEach(trade => {
-          start++;
-          trades.push(trade);
-        });
-      }
-      else {
-        start = 0;
-
-        data.forEach(trade => {
-          if (trade.timestamp === finishTrade.timestamp)
-            return;
-          if (moment.utc(trade.timestamp).valueOf() >= finishTime.valueOf())
-            return;
-          trades.push(trade);
-        });
-
-        if (moment.utc(finishTrade.timestamp).valueOf() >= finishTime.valueOf())
-          break;
-
-        startTime = moment.utc(finishTrade.timestamp);
-      }
-    }
-
-    return trades;
-  };
-
-  /**
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
-   *
    * populate trades
    *
    *
@@ -189,34 +102,53 @@ async function BitmexTradesPopulator(apiUrl, apiKey, apiSecret, symbol, filePath
    *
    */
 
+  let start = 0;
+
   let startTimestampMoment = moment.utc(startTimestamp);
   let finishTimestampMoment = moment.utc(finishTimestamp);
 
   while (startTimestampMoment.valueOf() < finishTimestampMoment.valueOf()) {
     console.log(`fetching trades from ${startTimestampMoment.format('YYYY-MM-DD HH:mm:SS')}...`);
 
-    const trades = await getTrades(
-      startTimestampMoment.clone(),
-      startTimestampMoment.clone().add(1, 'minute')
-    );
+    const query = {
+      symbol: symbol,
+      startTime: startTimestampMoment.format('YYYY-MM-DD[T]HH:mm:ss.SSS[Z]'),
+      start: start,
+      count: 1000,
+    };
 
-    const tradesFilePath = `${filePath}/${symbol}/${startTimestampMoment.format('YYYY-MM-DDTHH:mm:SS')}.csv`;
-    const tradesStringified = trades.map(trade => `${trade.timestamp},${trade.side},${trade.price}\n`).join('');
+    const response = await privateRequest('GET', '/api/v1/trade', query, null);
 
-    await new Promise((resolve, reject) => {
-      fs.writeFile(tradesFilePath, tradesStringified, err => {
-        if (err) {
-          console.error(err);
-          reject(err);
-        }
-        else {
-          console.log(`Trades saved to ${tradesFilePath}`);
-          resolve();
-        }
-      });
+    if (response.status !== 200) {
+      console.error(response.data);
+
+      await new Promise(resolve => setTimeout(resolve, 10000));
+
+      continue;
+    }
+
+    const data = response.data;
+    const startTrade = data[0];
+    const finishTrade = data[data.length - 1];
+
+    if (startTrade.timestamp !== finishTrade.timestamp)
+      start = 0;
+
+    data.forEach(trade => {
+      if (trade.timestamp === finishTrade.timestamp)
+        start++;
+
+      const fileName = moment.utc(trade.timestamp).startOf('hour').format('YYYY-MM-DDTHH:mm:SS') + '.csv';
+      const fileData = `${trade.timestamp},${trade.side},${trade.price}\n`;
+
+      if (!fs.existsSync(`${filePath}/${fileName}`))
+        fs.writeFileSync(`${filePath}/${fileName}`, '');
+
+      fs.appendFileSync(`${filePath}/${fileName}`, fileData);
     });
 
-    startTimestampMoment = startTimestampMoment.add(1, 'minute');
+    if (startTrade.timestamp !== finishTrade.timestamp)
+      startTimestampMoment = moment.utc(finishTrade.timestamp);
   }
 
 };
