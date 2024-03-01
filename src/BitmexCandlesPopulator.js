@@ -80,7 +80,7 @@ async function BitmexCandlesPopulator(candlesInterval, tradesFilesPath, candlesF
     trades.forEach(t => {
       if (!t) return;
       const trade = t.split(',');
-      const timestamp = moment.unix(Math.floor(moment.utc(trade[0]).unix() / candlesInterval) * candlesInterval).utc().format('YYYY-MM-DD HH:mm:SS');
+      const timestamp = moment.unix(Math.floor(moment.utc(trade[0]).unix() / candlesInterval) * candlesInterval).utc().format('YYYY-MM-DD HH:mm:ss');
       if (candle.timestamp === '') {
         candle.timestamp = timestamp;
         candle.open = +trade[2];
