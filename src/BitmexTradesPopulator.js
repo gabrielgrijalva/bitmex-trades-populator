@@ -101,7 +101,7 @@ async function BitmexTradesPopulator(apiUrl, apiKey, apiSecret, symbol, filePath
    *
    */
 
-  let startTimestamp = '2017-01-01 00:00:00';
+  let startTimestamp = '2020-01-01 00:00:00';
 
   const files = fs.readdirSync(filePath).sort();
 
@@ -141,6 +141,7 @@ async function BitmexTradesPopulator(apiUrl, apiKey, apiSecret, symbol, filePath
 
   let start = 0;
   let lastRequest = 0;
+  let lastFileName = '';
   let startTimestampMoment = moment.utc(startTimestamp);
   let finishTimestampMoment = moment.utc(finishTimestamp);
 
@@ -184,14 +185,12 @@ async function BitmexTradesPopulator(apiUrl, apiKey, apiSecret, symbol, filePath
     if (startTrade.timestamp !== finishTrade.timestamp)
       start = 0;
 
-    let lastFileName = '';
-
     data.forEach(trade => {
       if (trade.timestamp === finishTrade.timestamp)
         start++;
 
       const fileData = `${trade.timestamp},${trade.side},${trade.price}\n`;
-      const fileName = moment.utc(trade.timestamp).startOf('hour').format('YYYY-MM-DDTHH:mm:SS') + '.csv';
+      const fileName = moment.utc(trade.timestamp).startOf('hour').format('YYYY-MM-DD[T]HH:mm:ss') + '.csv';
 
       if (fileName !== lastFileName) {
         lastFileName = fileName;
